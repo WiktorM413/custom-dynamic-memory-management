@@ -6,14 +6,16 @@
 
 class LinearAllocator
 {
-	uint8_t* start;
-	uint8_t* curr;
-	uint8_t* end;
-	
+public:	
 	LinearAllocator(std::size_t size);
 
 	~LinearAllocator();
 
 	template<typename T> T* Allocate();
 	void Reallocate();
+
+private:
+	uint8_t* start;
+	uint8_t* curr;
+	uint8_t* end;
 };
