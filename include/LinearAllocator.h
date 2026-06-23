@@ -6,12 +6,22 @@
 
 class LinearAllocator
 {
-public:	
+public:
 	LinearAllocator(std::size_t size);
 
 	~LinearAllocator();
 
-	template<typename T> T* Allocate();
+	template<typename T>
+	T* Allocate(){
+		if (this->curr + sizeof(T) > this->end){
+			return nullptr;
+		}
+		T* ptr = reinterpret_cast<T*>(this->curr);
+		this->curr += sizeof(T);
+		return ptr;
+	};
+
+
 	void Reallocate();
 
 private:
