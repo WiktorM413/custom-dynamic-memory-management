@@ -1,15 +1,28 @@
 #include <iostream>
+#include <iterator>
 #include "../include/LinearAllocator.h"
 
 int main()
 {
-	LinearAllocator allocator(sizeof(int));
+	LinearAllocator allocator(sizeof(int) * 20);
 
-	int* testInt = allocator.Allocate<int>();
+	int* testArray = reinterpret_cast<int*>(allocator.Allocate<int[10]>());
 
-	if( testInt != nullptr){
-		*testInt = 14;
-		std::cout << *testInt;
+
+	if( testArray != nullptr){
+		testArray[0] = 14;
+		std::cout << testArray[0] << "\n";
+		int* reallocatedArray = allocator.Reallocate<int>(testArray, sizeof(int) * 20);
+		reallocatedArray[19] = 1;
+		std::cout << reallocatedArray[19] << "\n";
+
+		allocator.Reset();
+		float* testFloat = reinterpret_cast<float*>(allocator.Allocate<float>());
+		*testFloat = 1.21;
+		std::cout << *testFloat << "\n";
+
+		//garbage value
+		std::cout << reallocatedArray[0] << "\n";
 	}
 	else {
 		std::cout<< "allocation error";
