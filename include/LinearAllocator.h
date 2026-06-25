@@ -27,8 +27,8 @@ public:
 
 
 	// only works on last allocation
-	template<typename TTo, typename TFrom>
-	TTo* Reallocate(TFrom* reallocatedC, std::size_t arraySize = 1){
+	template<typename TTo>
+	TTo* Reallocate(void* reallocatedC, std::size_t arraySize = 1){
 		if (reinterpret_cast<uint8_t*>(reallocatedC) != this->lastAlloc)
 		{
 			return nullptr;
@@ -43,7 +43,7 @@ public:
 		}
 
 		this->curr = nextCurr;
-		return reinterpret_cast<TTo*>(this->curr);
+		return reinterpret_cast<TTo*>(this->lastAlloc);
 	};
 
 	void Reset();

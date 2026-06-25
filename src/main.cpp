@@ -12,7 +12,7 @@ int main()
 	if( testArray != nullptr){
 		testArray[0] = 14;
 		std::cout << testArray[0] << "\n";
-		int* reallocatedArray = allocator.Reallocate<int, int>(testArray, 20);
+		int* reallocatedArray = allocator.Reallocate<int>(testArray, 20);
 		reallocatedArray[19] = 1;
 		std::cout << reallocatedArray[19] << "\n";
 
