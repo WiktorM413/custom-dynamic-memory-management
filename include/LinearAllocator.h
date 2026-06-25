@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
@@ -13,16 +14,16 @@ public:
 
 	template<typename T>
 	T* Allocate(){
-		uintptr_t aligned = (reinterpret_cast<uintptr_t>(this->curr + alignof(T) -1)) & ~(alignof(T)-1);
-		if (reinterpret_cast<uint8_t*>(aligned)+ sizeof(T) > this->end)
+		uint8_t* aligned = reinterpret_cast<uint8_t*>((reinterpret_cast<uintptr_t>(this->curr + alignof(T) -1)) & ~(alignof(T)-1));
+		if (aligned + sizeof(T) > this->end)
 		{
 			return nullptr;
 		}
 
-		this->lastAlloc = reinterpret_cast<uint8_t*>(aligned);
-		
+		this->lastAlloc = aligned;
+
 		T* ptr = reinterpret_cast<T*>(aligned);
-		this->curr = reinterpret_cast<uint8_t*>(aligned) + sizeof(T);
+		this->curr = aligned + sizeof(T);
 
 		return ptr;
 	};
