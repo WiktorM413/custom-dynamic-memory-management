@@ -13,7 +13,7 @@ public:
 
 	template<typename T>
 	T* Allocate(){
-		if (this->curr + alignof(T) > this->end)
+		if (this->curr + sizeof(T) > this->end)
 		{
 			return nullptr;
 		}
@@ -21,7 +21,7 @@ public:
 		this->lastAlloc = this->curr; // update last alloc
 
 		T* ptr = reinterpret_cast<T*>(this->curr);
-		this->curr += alignof(T);
+		this->curr += sizeof(T);
 		return ptr;
 	};
 
@@ -34,7 +34,7 @@ public:
 			return nullptr;
 		}
 
-		std::size_t newSize = alignof(TTo) * arraySize;
+		std::size_t newSize = sizeof(TTo) * arraySize;
 
 		uint8_t* nextCurr = this->lastAlloc + newSize;
 		if (nextCurr > this->end)
