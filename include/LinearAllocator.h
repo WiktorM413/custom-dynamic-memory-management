@@ -13,9 +13,11 @@ public:
 
 	template<typename T>
 	T* Allocate(){
-		if (this->curr + sizeof(T) > this->end){
+		if (this->curr + sizeof(T) > this->end)
+		{
 			return nullptr;
 		}
+		
 		this->lastAlloc = this->curr; // update last alloc
 
 		T* ptr = reinterpret_cast<T*>(this->curr);
@@ -25,17 +27,23 @@ public:
 
 
 	// only works on last allocation
-	template<typename T>
-	T* Reallocate(T* reallocatedC, std::size_t newSize){
-		if (reinterpret_cast<uint8_t*>(reallocatedC) != this->lastAlloc) {
+	template<typename TTo, typename TFrom>
+	TTo* Reallocate(TFrom* reallocatedC, std::size_t arraySize = 1){
+		if (reinterpret_cast<uint8_t*>(reallocatedC) != this->lastAlloc)
+		{
 			return nullptr;
 		}
+
+		std::size_t newSize = sizeof(TTo) * arraySize;
+		
 		uint8_t* nextCurr = this->lastAlloc + newSize;
-		if (nextCurr > this->end) {
+		if (nextCurr > this->end)
+		{
 			return nullptr;
 		}
+		
 		this->curr = nextCurr;
-		return reallocatedC;
+		return reinterpret_cast<TTo*>(this->curr);
 	};
 
 	void Reset();
