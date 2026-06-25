@@ -23,7 +23,6 @@ int main()
 
 		//garbage value
 		std::cout << reallocatedArray[0] << "\n";
-		std::cout << reallocatedArray[19] << "\n";
 	}
 	else {
 		std::cout<< "allocation error";
