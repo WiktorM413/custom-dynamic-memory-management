@@ -13,15 +13,17 @@ public:
 
 	template<typename T>
 	T* Allocate(){
-		if (this->curr + sizeof(T) > this->end)
+		uintptr_t aligned = (reinterpret_cast<uintptr_t>(this->curr + alignof(T) -1)) & ~(alignof(T)-1);
+		if (reinterpret_cast<uint8_t*>(aligned)+ sizeof(T) > this->end)
 		{
 			return nullptr;
 		}
 
-		this->lastAlloc = this->curr; // update last alloc
+		this->lastAlloc = reinterpret_cast<uint8_t*>(aligned);
+		
+		T* ptr = reinterpret_cast<T*>(aligned);
+		this->curr = reinterpret_cast<uint8_t*>(aligned) + sizeof(T);
 
-		T* ptr = reinterpret_cast<T*>(this->curr);
-		this->curr += sizeof(T);
 		return ptr;
 	};
 
