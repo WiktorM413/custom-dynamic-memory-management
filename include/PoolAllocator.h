@@ -24,7 +24,7 @@ private:
 		Chunk* next;
 	};
 
-	Chunk* AllocateBlock();
+	Chunk* AllocateBlock(const std::size_t& chunkSize);
 	
 	std::size_t chunksPerBlock;
 	Chunk*      allocator;
