@@ -38,7 +38,11 @@ public:
 
 	void Deallocate(T* ptr)
 	{
-		
+		Chunk* chunk = reinterpret_cast<Chunk*>(ptr);
+
+		chunk->next = this->allocator;
+
+		allocator = chunk;
 	}
 
 private:
