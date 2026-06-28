@@ -1,9 +1,7 @@
 #pragma once
 
 #include <algorithm>
-#include <cstddef>
 #include <cstdint>
-#include <iostream>
 #include <vector>
 
 template<typename T>
@@ -11,6 +9,7 @@ class PoolAllocator
 {
 public:
 	PoolAllocator(std::size_t chunksPerBlock): chunksPerBlock(chunksPerBlock), allocator(nullptr), blocks({}) {}
+	
 	~PoolAllocator()
 	{
 		for (int i = 0; i < this->blocks.size(); i++)
