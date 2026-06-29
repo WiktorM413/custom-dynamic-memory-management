@@ -58,6 +58,11 @@ private:
 
 		Chunk* begin = reinterpret_cast<Chunk*>(malloc(blockSize));
 
+		if (! begin)
+		{
+			throw std::bad_alloc();
+		}
+
 		Chunk* curr = begin;
 		for (std::size_t i = 0; i < this->chunksPerBlock - 1; i++)
 		{
