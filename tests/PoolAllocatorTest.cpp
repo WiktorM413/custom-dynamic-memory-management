@@ -225,22 +225,34 @@ protected:
 
 TEST_F(PoolAllocatorDestructingTest, TestDestructingSingleObject)
 {
-	Spy* obj = this->allocator->Allocate(&destroyCount);
-	EXPECT_EQ(destroyCount, 0);
-	this->allocator->Deallocate(obj);
-	EXPECT_EQ(destroyCount, 1);
+	Spy* p = this->allocator->Allocate(&this->destroyCount);
+	
+	EXPECT_EQ(this->destroyCount, 0);
+	
+	this->allocator->Deallocate(p);
+	
+	EXPECT_EQ(this->destroyCount, 1);
 }
 
 TEST_F(PoolAllocatorDestructingTest, TestDestructingMutipleObjects)
 {
-	Spy* a = this->allocator->Allocate(&destroyCount);
-	Spy* b = this->allocator->Allocate(&destroyCount);
-	this->allocator->Deallocate(a);
-	this->allocator->Deallocate(b);
-	EXPECT_EQ(destroyCount, 2);
+	Spy* p1 = this->allocator->Allocate(&this->destroyCount);
+	Spy* p2 = this->allocator->Allocate(&this->destroyCount);
+	
+	this->allocator->Deallocate(p1);
+	this->allocator->Deallocate(p2);
+	
+	EXPECT_EQ(this->destroyCount, 2);
 }
 
 TEST_F(PoolAllocatorDestructingTest, TestPoolDestructor)
 {
+	Spy* p1 = this->allocator->Allocate(&this->destroyCount);
+	Spy* p2 = this->allocator->Allocate(&this->destroyCount);
 	
+	this->allocator->~PoolAllocator();
+
+	EXPECT_EQ(this->destroyCount, 2);
+
+	new (std::addressof(*this->allocator)) PoolAllocator<Spy>(this->size);
 }
