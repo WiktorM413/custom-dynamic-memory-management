@@ -14,11 +14,13 @@ public:
 	{
 		for (int i = 0; i < this->blocks.size(); i++)
 		{
+			std::destroy_at(blocks[i]);
 			free(blocks[i]);
 		}
 	}
 
-	T* Allocate()
+	template<class ... Args>
+	T* Allocate(Args&&... args)
 	{
 		if (! this->allocator)
 		{
@@ -31,8 +33,11 @@ public:
 		
 		this->allocator = this->allocator->next;
 		
+		T* newVar = reinterpret_cast<T*>(freeChunk);
 
-		return reinterpret_cast<T*>(freeChunk);
+		newVar = std::construct_at(newVar, std::forward<Args>(args)...);
+		
+		return newVar;
 	}
 
 	void Deallocate(T* ptr)
@@ -42,6 +47,8 @@ public:
 		chunk->next = this->allocator;
 
 		allocator = chunk;
+
+		std::destroy_at(ptr);
 	}
 
 private:
@@ -57,6 +64,11 @@ private:
 		const std::size_t blockSize = this->chunksPerBlock * chunkSize;
 
 		Chunk* begin = reinterpret_cast<Chunk*>(malloc(blockSize));
+
+		if (! begin)
+		{
+			throw std::bad_alloc();
+		}
 
 		Chunk* curr = begin;
 		for (std::size_t i = 0; i < this->chunksPerBlock - 1; i++)
