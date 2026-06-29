@@ -189,3 +189,58 @@ TEST_F(PoolAllocatorTest, TestDeallocatedMemoryIsWritableAfterReuse)
 
 	EXPECT_EQ(*p2, 200);
 }
+
+TEST_F(PoolAllocatorTest, TestConstructing)
+{
+	int* p = this->allocator->Allocate(20);
+
+	EXPECT_EQ(*p, 20);
+}
+
+
+class PoolAllocatorDestructingTest : public testing::Test
+{
+protected:
+	struct Spy
+	{
+		int* count;
+
+		Spy(int* c): count(c) {}
+		~Spy()
+		{
+			(*count)++;
+		}
+	};
+
+	const std::size_t size = 8;
+	std::optional<PoolAllocator<Spy>> allocator;
+	int destroyCount = 0;
+
+	void SetUp() override
+	{
+		allocator.emplace(size);
+		destroyCount = 0;
+	}
+};
+
+TEST_F(PoolAllocatorDestructingTest, TestDestructingSingleObject)
+{
+	Spy* obj = this->allocator->Allocate(&destroyCount);
+		EXPECT_EQ(destroyCount, 0);
+		this->allocator->Deallocate(obj);
+		EXPECT_EQ(destroyCount, 1);
+}
+
+TEST_F(PoolAllocatorDestructingTest, TestDestructingMutipleObjects)
+{
+		Spy* a = this->allocator->Allocate(&destroyCount);
+		Spy* b = this->allocator->Allocate(&destroyCount);
+		this->allocator->Deallocate(a);
+		this->allocator->Deallocate(b);
+		EXPECT_EQ(destroyCount, 2);
+}
+
+TEST_F(PoolAllocatorDestructingTest, TestPoolDestructor)
+{
+	
+}
