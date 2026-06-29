@@ -4,6 +4,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#include <memory>
+#include <utility>
 
 class LinearAllocator
 {
@@ -12,20 +14,41 @@ public:
 
 	~LinearAllocator();
 
-	template<typename T>
-	T* Allocate(){
-		uint8_t* aligned = reinterpret_cast<uint8_t*>((reinterpret_cast<uintptr_t>(this->curr + alignof(T) -1)) & ~(alignof(T)-1));
-		if (aligned + sizeof(T) > this->end)
-		{
+
+	//TODO:	 allocate<string>("content") in 1 line
+	template<typename T, typename... Args>
+	T* Allocate(Args&&... arguments){
+		void* ptr  = this->curr;
+		size_t space = this->end - this->curr;
+
+		if ((std::align(alignof(T), sizeof(T), ptr, space)) == nullptr){
 			return nullptr;
 		}
+		uint8_t* uint8_tPtr = reinterpret_cast<uint8_t*>(ptr);
+		this->lastAlloc = uint8_tPtr;
+		this->curr = uint8_tPtr + sizeof(T);
 
-		this->lastAlloc = aligned;
+		T* res = reinterpret_cast<T*>(ptr);
 
-		T* ptr = reinterpret_cast<T*>(aligned);
-		this->curr = aligned + sizeof(T);
+		return std::construct_at(res, std::forward<Args>(arguments)...);
+	};
 
-		return ptr;
+	template<typename T>
+	T* AllocateArray(std::size_t count){
+		void* ptr  = this->curr;
+		size_t space = this->end - this->curr;
+		size_t size = sizeof(T)*count;
+
+		if ((std::align(alignof(T), size, ptr, space)) == nullptr){
+			return nullptr;
+		}
+		uint8_t* uint8_tPtr = reinterpret_cast<uint8_t*>(ptr);
+		this->lastAlloc = uint8_tPtr;
+		this->curr = uint8_tPtr + size;
+
+		T* res = reinterpret_cast<T*>(ptr);
+
+		return res;
 	};
 
 
