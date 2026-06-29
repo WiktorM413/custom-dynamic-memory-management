@@ -23,7 +23,7 @@ public:
 		}
 	}
 
-	template<class ... Args>
+	template<typename ... Args>
 	T* Allocate(Args&&... args)
 	{
 		if (! this->allocator)
