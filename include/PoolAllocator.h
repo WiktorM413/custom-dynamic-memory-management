@@ -12,10 +12,14 @@ public:
 	
 	~PoolAllocator()
 	{
-		for (int i = 0; i < this->blocks.size(); i++)
+		for (T* obj : this->objects)
 		{
-			std::destroy_at(blocks[i]);
-			free(blocks[i]);
+			std::destroy_at(obj);
+		}
+
+		for (Chunk* block : this->blocks)
+		{
+			free(block);
 		}
 	}
 
@@ -36,6 +40,8 @@ public:
 		T* newVar = reinterpret_cast<T*>(freeChunk);
 
 		newVar = std::construct_at(newVar, std::forward<Args>(args)...);
+
+		this->objects.push_back(newVar);
 		
 		return newVar;
 	}
@@ -49,6 +55,9 @@ public:
 		chunk->next = this->allocator;
 
 		allocator = chunk;
+
+		auto newBegin = std::remove(this->objects.begin(), this->objects.end(), ptr);
+		this->objects.erase(newBegin, this->objects.end());
 	}
 
 private:
@@ -83,7 +92,8 @@ private:
 		return begin;
 	}
 	
-	std::size_t              chunksPerBlock;
-	Chunk*                   allocator;
-	std::vector<Chunk*>      blocks;
+	std::size_t         chunksPerBlock;
+	Chunk*              allocator;
+	std::vector<Chunk*> blocks;
+	std::vector<T*>     objects;
 };
