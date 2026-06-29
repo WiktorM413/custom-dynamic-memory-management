@@ -9,21 +9,21 @@ namespace
 		int x;
 		int y;
 	};
-}
-
-template<typename T>
-class PoolAllocatorTypedTest : public testing::Test
-{	
-protected:
-	const std::size_t size = 8;
 	
-	std::optional<PoolAllocator<T>> allocator;
-
-	void SetUp() override
-	{
-		allocator.emplace(size);
-	}
-};
+	template<typename T>
+	class PoolAllocatorTypedTest : public testing::Test
+	{	
+	protected:
+		const std::size_t size = 8;
+		
+		std::optional<PoolAllocator<T>> allocator;
+	
+		void SetUp() override
+		{
+			allocator.emplace(size);
+		}
+	};
+}
 
 using TestedTypes = testing::Types<int, double, Point>;
 TYPED_TEST_SUITE(PoolAllocatorTypedTest, TestedTypes);
@@ -154,18 +154,20 @@ TYPED_TEST(PoolAllocatorTypedTest, TestDeallocateAllAndReallocate)
 	}
 }
 
-
-class PoolAllocatorTest : public testing::Test
+namespace
 {
-protected:
-	const std::size_t size = 8;
-	std::optional<PoolAllocator<int>> allocator;
-
-	void SetUp() override
+	class PoolAllocatorTest : public testing::Test
 	{
-		allocator.emplace(size);
-	}
-};
+	protected:
+			const std::size_t size = 8;
+			std::optional<PoolAllocator<int>> allocator;
+	
+			void SetUp() override
+			{
+				allocator.emplace(size);
+			}
+	};
+}
 
 TEST_F(PoolAllocatorTest, TestWritable)
 {
@@ -197,31 +199,33 @@ TEST_F(PoolAllocatorTest, TestConstructing)
 	EXPECT_EQ(*p, 20);
 }
 
-
-class PoolAllocatorDestructingTest : public testing::Test
+namespace
 {
-protected:
-	struct Spy
+	class PoolAllocatorDestructingTest : public testing::Test
 	{
-		int* count;
-
-		Spy(int* c): count(c) {}
-		~Spy()
-		{
-			(*count)++;
-		}
+	protected:
+			struct Spy
+			{
+				int* count;
+	
+				Spy(int* c): count(c) {}
+				~Spy()
+				{
+					(*count)++;
+				}
+			};
+	
+			const std::size_t size = 8;
+			std::optional<PoolAllocator<Spy>> allocator;
+			int destroyCount = 0;
+	
+			void SetUp() override
+			{
+				allocator.emplace(size);
+				destroyCount = 0;
+			}
 	};
-
-	const std::size_t size = 8;
-	std::optional<PoolAllocator<Spy>> allocator;
-	int destroyCount = 0;
-
-	void SetUp() override
-	{
-		allocator.emplace(size);
-		destroyCount = 0;
-	}
-};
+}
 
 TEST_F(PoolAllocatorDestructingTest, TestDestructingSingleObject)
 {
