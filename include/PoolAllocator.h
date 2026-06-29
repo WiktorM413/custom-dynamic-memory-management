@@ -14,6 +14,7 @@ public:
 	{
 		for (int i = 0; i < this->blocks.size(); i++)
 		{
+			std::destroy_at(blocks[i]);
 			free(blocks[i]);
 		}
 	}
@@ -42,6 +43,8 @@ public:
 		chunk->next = this->allocator;
 
 		allocator = chunk;
+
+		std::destroy_at(ptr);
 	}
 
 private:
