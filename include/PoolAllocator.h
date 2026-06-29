@@ -42,13 +42,13 @@ public:
 
 	void Deallocate(T* ptr)
 	{
+		std::destroy_at(ptr);
+		
 		Chunk* chunk = reinterpret_cast<Chunk*>(ptr);
 
 		chunk->next = this->allocator;
 
 		allocator = chunk;
-
-		std::destroy_at(ptr);
 	}
 
 private:
