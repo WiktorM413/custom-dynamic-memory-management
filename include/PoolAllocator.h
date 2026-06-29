@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <memory>
 #include <vector>
 
 template<typename T>
@@ -19,7 +20,8 @@ public:
 		}
 	}
 
-	T* Allocate()
+	template<class ... Args>
+	T* Allocate(Args&&... args)
 	{
 		if (! this->allocator)
 		{
@@ -32,8 +34,11 @@ public:
 		
 		this->allocator = this->allocator->next;
 		
+		T* newVar = reinterpret_cast<T*>(freeChunk);
 
-		return reinterpret_cast<T*>(freeChunk);
+		newVar = std::construct_at(newVar, std::forward<Args>(args)...);
+		
+		return newVar;
 	}
 
 	void Deallocate(T* ptr)
