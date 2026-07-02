@@ -12,13 +12,19 @@ public:
 	
 	~PoolAllocator()
 	{
-		for (int i = 0; i < this->blocks.size(); i++)
+		for (T* obj : this->objects)
 		{
-			free(blocks[i]);
+			std::destroy_at(obj);
+		}
+
+		for (Chunk* block : this->blocks)
+		{
+			free(block);
 		}
 	}
 
-	T* Allocate()
+	template<typename ... Args>
+	T* Allocate(Args&&... args)
 	{
 		if (! this->allocator)
 		{
@@ -31,17 +37,27 @@ public:
 		
 		this->allocator = this->allocator->next;
 		
+		T* newVar = reinterpret_cast<T*>(freeChunk);
 
-		return reinterpret_cast<T*>(freeChunk);
+		newVar = std::construct_at(newVar, std::forward<Args>(args)...);
+
+		this->objects.push_back(newVar);
+		
+		return newVar;
 	}
 
 	void Deallocate(T* ptr)
 	{
+		std::destroy_at(ptr);
+		
 		Chunk* chunk = reinterpret_cast<Chunk*>(ptr);
 
 		chunk->next = this->allocator;
 
 		allocator = chunk;
+
+		auto newBegin = std::remove(this->objects.begin(), this->objects.end(), ptr);
+		this->objects.erase(newBegin, this->objects.end());
 	}
 
 private:
@@ -58,6 +74,11 @@ private:
 
 		Chunk* begin = reinterpret_cast<Chunk*>(malloc(blockSize));
 
+		if (! begin)
+		{
+			throw std::bad_alloc();
+		}
+
 		Chunk* curr = begin;
 		for (std::size_t i = 0; i < this->chunksPerBlock - 1; i++)
 		{
@@ -71,7 +92,8 @@ private:
 		return begin;
 	}
 	
-	std::size_t              chunksPerBlock;
-	Chunk*                   allocator;
-	std::vector<Chunk*>      blocks;
+	std::size_t         chunksPerBlock;
+	Chunk*              allocator;
+	std::vector<Chunk*> blocks;
+	std::vector<T*>     objects;
 };
