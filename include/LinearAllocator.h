@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
+#include <format>
 
 enum class AllocMode
 {
@@ -102,10 +103,14 @@ class LinearAllocator
 			else
 			{
 				if (uint8_tPtr + sizeof(T) > reinterpret_cast<uint8_t*>(this->destructStart) - sizeof(DestructorEntry)) [[unlikely]]
+				{
 					return nullptr;
+				}
 
 				if (this->destructStart <= this->destructCap) [[unlikely]]
+				{
 					return nullptr;
+				}
 
 				this->lastAlloc = uint8_tPtr;
 				this->curr = uint8_tPtr + sizeof(T);
@@ -122,9 +127,7 @@ class LinearAllocator
 		{
 			if (args.size() > count)
 			{
-				throw std::out_of_range(
-					"number of args: " + std::to_string(args.size()) +
-					" exceeds allocated count of " + std::to_string(count));
+				throw std::out_of_range(std::format("number of args: {} exceeds allocated count of {}", args.size(), count));
 			}
 
 			void*  ptr = this->curr;
@@ -179,10 +182,12 @@ class LinearAllocator
 
 			for (std::size_t i = 0; i < count; i++)
 			{
-				if (i < args.size()){
+				if (i < args.size())
+				{
 					std::construct_at(res + i, *(args.begin() + i));
 				}
-				else{
+				else
+				{
 					std::construct_at(res + i);
 				}
 			}
