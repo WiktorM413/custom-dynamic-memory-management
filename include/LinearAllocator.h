@@ -1,6 +1,5 @@
 #pragma once
 
-#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
@@ -12,7 +11,8 @@
 #include <type_traits>
 #include <utility>
 
-enum class AllocMode{
+enum class AllocMode
+{
 	GrowOut,
 	CutIn
 };
@@ -51,7 +51,8 @@ class LinearAllocator
 			this->destructCap = reinterpret_cast<DestructorEntry*>(this->realEnd) - maxDestructors;
 		}
 
-		~LinearAllocator(){
+		~LinearAllocator()
+		{
 			this->Reset();
 			free(this->start);
 		}
@@ -68,7 +69,8 @@ class LinearAllocator
 			void*  ptr   = this->curr;
 			size_t space = this->end - this->curr;
 
-			if (std::align(alignof(T), sizeof(T), ptr, space) == nullptr) [[unlikely]]{
+			if (std::align(alignof(T), sizeof(T), ptr, space) == nullptr) [[unlikely]]
+			{
 				return nullptr;
 			}
 
@@ -86,7 +88,9 @@ class LinearAllocator
 				else
 				{
 					if (uint8_tPtr + sizeof(T) > reinterpret_cast<uint8_t*>(this->destructCap)) [[unlikely]]
+					{
 						return nullptr;
+					}
 				}
 
 				this->lastAlloc = uint8_tPtr;
@@ -128,7 +132,9 @@ class LinearAllocator
 			size_t size = sizeof(T) * count;
 
 			if (std::align(alignof(T), size, ptr, space) == nullptr) [[unlikely]]
+			{
 				return nullptr;
+			}
 
 			uint8_t* uint8_tPtr = reinterpret_cast<uint8_t*>(ptr);
 
@@ -155,11 +161,13 @@ class LinearAllocator
 			}
 			else
 			{
-				if (uint8_tPtr + size > reinterpret_cast<uint8_t*>(this->destructStart) - sizeof(DestructorEntry)) [[unlikely]]{
+				if (uint8_tPtr + size > reinterpret_cast<uint8_t*>(this->destructStart) - sizeof(DestructorEntry)) [[unlikely]]
+				{
 					return nullptr;
 				}
 
-				if (this->destructStart <= this->destructCap) [[unlikely]]{
+				if (this->destructStart <= this->destructCap) [[unlikely]]
+				{
 					return nullptr;
 				}
 
@@ -179,7 +187,8 @@ class LinearAllocator
 				}
 			}
 
-			if constexpr (!std::is_trivially_destructible_v<T>){
+			if constexpr (!std::is_trivially_destructible_v<T>)
+			{
 				this->RegisterDestructor<T>(res, count);
 			}
 
@@ -190,7 +199,8 @@ class LinearAllocator
 		template<typename T>
 		T* Reallocate(void* reallocatedC, std::size_t arraySize = 1)
 		{
-			if (reinterpret_cast<uint8_t*>(reallocatedC) != this->lastAlloc) [[unlikely]]{
+			if (reinterpret_cast<uint8_t*>(reallocatedC) != this->lastAlloc) [[unlikely]]
+			{
 				return nullptr;
 			}
 
@@ -199,24 +209,28 @@ class LinearAllocator
 
 			if constexpr (Mode == AllocMode::GrowOut)
 			{
-				if (nextCurr > this->end) [[unlikely]]{
+				if (nextCurr > this->end) [[unlikely]]
+				{
 					return nullptr;
 				}
 			}
 			else
 			{
-				if (nextCurr > reinterpret_cast<uint8_t*>(this->destructCap)) [[unlikely]]{
+				if (nextCurr > reinterpret_cast<uint8_t*>(this->destructCap)) [[unlikely]]
+				{
 					return nullptr;
 				}
 			}
 
-			if (nextCurr > reinterpret_cast<uint8_t*>(this->destructStart)) [[unlikely]]{
+			if (nextCurr > reinterpret_cast<uint8_t*>(this->destructStart)) [[unlikely]]
+			{
 				return nullptr;
 			}
 
 			this->curr = nextCurr;
 
-			if (this->lastDestructor != nullptr){
+			if (this->lastDestructor != nullptr)
+			{
 				this->lastDestructor->count = arraySize;
 			}
 
